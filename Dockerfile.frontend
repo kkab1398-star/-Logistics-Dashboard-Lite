@@ -1,0 +1,25 @@
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.json ./
+COPY lib ./lib
+COPY artifacts/al-shalal ./artifacts/al-shalal
+COPY attached_assets ./attached_assets
+
+RUN pnpm install --frozen-lockfile
+
+ENV BASE_PATH=/
+ENV NODE_ENV=production
+
+RUN pnpm --filter @workspace/al-shalal run build
+
+# ---- Serve via nginx ----
+FROM nginx:alpine AS runner
+
+COPY --from=builder /app/artifacts/al-shalal/dist/public /usr/share/nginx/html
+
+EXPOSE 80

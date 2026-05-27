@@ -1,0 +1,1049 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.2.0
+  description: Al-Shalal Logistics API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: drivers
+  - name: expenses
+  - name: revenues
+  - name: transfers
+  - name: settlements
+  - name: analytics
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ── DRIVERS ──────────────────────────────────────────
+  /drivers:
+    get:
+      operationId: listDrivers
+      tags: [drivers]
+      responses:
+        "200":
+          description: List of drivers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Driver"
+    post:
+      operationId: createDriver
+      tags: [drivers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDriverBody"
+      responses:
+        "201":
+          description: Created driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /drivers/{id}:
+    get:
+      operationId: getDriver
+      tags: [drivers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Driver details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDriver
+      tags: [drivers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDriverBody"
+      responses:
+        "200":
+          description: Updated driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDriver
+      tags: [drivers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /auth/driver-login:
+    post:
+      operationId: driverLogin
+      tags: [drivers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DriverLoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriverLoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account frozen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── EXPENSES ──────────────────────────────────────────
+  /expenses:
+    get:
+      operationId: listExpenses
+      tags: [expenses]
+      parameters:
+        - name: driverId
+          in: query
+          schema:
+            type: integer
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [diesel, oil, maintenance, other]
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: activeOnly
+          in: query
+          description: If true, return only unsettled records
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseBody"
+      responses:
+        "201":
+          description: Created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /expenses/{id}:
+    patch:
+      operationId: updateExpense
+      tags: [expenses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateExpenseBody"
+      responses:
+        "200":
+          description: Updated expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "400":
+          description: Invalid body or no fields to update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Expense is settled and cannot be edited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /expenses/summary:
+    get:
+      operationId: getExpenseSummary
+      tags: [expenses]
+      parameters:
+        - name: driverId
+          in: query
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: activeOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Expense summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseSummary"
+
+  # ── REVENUES ──────────────────────────────────────────
+  /revenues:
+    get:
+      operationId: listRevenues
+      tags: [revenues]
+      parameters:
+        - name: driverId
+          in: query
+          schema:
+            type: integer
+        - name: activeOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of revenues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Revenue"
+    post:
+      operationId: createRevenue
+      tags: [revenues]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRevenueBody"
+      responses:
+        "201":
+          description: Created revenue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Revenue"
+
+  /revenues/{id}/repay:
+    patch:
+      operationId: repayRevenue
+      tags: [revenues]
+      summary: Mark a deferred revenue as paid (clears deferred flag and amount)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated revenue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Revenue"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /revenues/{id}:
+    patch:
+      operationId: updateRevenue
+      tags: [revenues]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRevenueBody"
+      responses:
+        "200":
+          description: Updated revenue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Revenue"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteRevenue
+      tags: [revenues]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── OWNER TRANSFERS ──────────────────────────────────
+  /transfers:
+    get:
+      operationId: listTransfers
+      tags: [transfers]
+      parameters:
+        - name: driverId
+          in: query
+          schema:
+            type: integer
+        - name: activeOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of transfers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transfer"
+    post:
+      operationId: createTransfer
+      tags: [transfers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransferBody"
+      responses:
+        "201":
+          description: Created transfer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transfer"
+
+  /transfers/{id}:
+    patch:
+      operationId: updateTransfer
+      tags: [transfers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransferBody"
+      responses:
+        "200":
+          description: Updated transfer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transfer"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Cannot edit a settled transfer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTransfer
+      tags: [transfers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── CYCLE SUMMARY ─────────────────────────────────────
+  /cycle-summary:
+    get:
+      operationId: getCycleSummary
+      tags: [settlements]
+      parameters:
+        - name: driverId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Current cycle summary for a driver
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleSummary"
+
+  # ── SETTLEMENTS ──────────────────────────────────────
+  /settlements:
+    get:
+      operationId: listSettlements
+      tags: [settlements]
+      parameters:
+        - name: driverId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of past settlements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Settlement"
+    post:
+      operationId: createSettlement
+      tags: [settlements]
+      summary: Settle current cycle for a driver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSettlementBody"
+      responses:
+        "201":
+          description: Settlement created and cycle archived
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settlement"
+
+  # ── ANALYTICS ─────────────────────────────────────────
+  /analytics:
+    get:
+      operationId: getAnalytics
+      tags: [analytics]
+      summary: Global analytics (admin only)
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Global analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsData"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        vehicleNumber:
+          type: string
+        username:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, vehicleNumber, username, status, createdAt]
+
+    CreateDriverBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        vehicleNumber:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+      required: [name, vehicleNumber, username, password]
+
+    UpdateDriverBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        vehicleNumber:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        status:
+          type: string
+
+    DriverLoginBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    DriverLoginResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        vehicleNumber:
+          type: string
+        username:
+          type: string
+        status:
+          type: string
+      required: [id, name, vehicleNumber, username, status]
+
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        driverId:
+          type: integer
+        type:
+          type: string
+          enum: [diesel, oil, maintenance, other]
+        amount:
+          type: number
+        liters:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        invoiceImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        settlementId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, driverId, type, amount, date, createdAt]
+
+    CreateExpenseBody:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        type:
+          type: string
+          enum: [diesel, oil, maintenance, other]
+        amount:
+          type: number
+        liters:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        invoiceImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+      required: [driverId, type, amount, date]
+
+    UpdateExpenseBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [diesel, oil, maintenance, other]
+        amount:
+          type: number
+        liters:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    ExpenseSummary:
+      type: object
+      properties:
+        totalAmount:
+          type: number
+        dieselTotal:
+          type: number
+        dieselLiters:
+          type: number
+        oilTotal:
+          type: number
+        maintenanceTotal:
+          type: number
+        otherTotal:
+          type: number
+        expenseCount:
+          type: integer
+      required: [totalAmount, dieselTotal, dieselLiters, oilTotal, maintenanceTotal, otherTotal, expenseCount]
+
+    Revenue:
+      type: object
+      properties:
+        id:
+          type: integer
+        driverId:
+          type: integer
+        amount:
+          type: number
+        clientName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        receiptImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        settlementId:
+          type: integer
+          nullable: true
+        isDeferred:
+          type: boolean
+        deferredAmount:
+          type: number
+        isPaid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, driverId, amount, date, createdAt]
+
+    CreateRevenueBody:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        amount:
+          type: number
+        clientName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        receiptImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        isDeferred:
+          type: boolean
+      required: [driverId, amount, date]
+
+    UpdateRevenueBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        clientName:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    Transfer:
+      type: object
+      properties:
+        id:
+          type: integer
+        driverId:
+          type: integer
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        receiptImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        settlementId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, driverId, amount, date, createdAt]
+
+    CreateTransferBody:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        receiptImageUrl:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+      required: [driverId, amount, date]
+
+    UpdateTransferBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    CycleSummary:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        totalTransfers:
+          type: number
+        netProfit:
+          type: number
+        driverShare:
+          type: number
+        ownerPayout:
+          type: number
+        revenueCount:
+          type: integer
+        expenseCount:
+          type: integer
+        transferCount:
+          type: integer
+        postponedBalance:
+          type: number
+        deferredCount:
+          type: integer
+        grossRevenue:
+          type: number
+        cashRevenue:
+          type: number
+      required:
+        - driverId
+        - totalRevenue
+        - totalExpenses
+        - totalTransfers
+        - netProfit
+        - driverShare
+        - ownerPayout
+        - revenueCount
+        - expenseCount
+        - transferCount
+        - postponedBalance
+        - deferredCount
+        - grossRevenue
+        - cashRevenue
+
+    Settlement:
+      type: object
+      properties:
+        id:
+          type: integer
+        driverId:
+          type: integer
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        totalTransfers:
+          type: number
+        netProfit:
+          type: number
+        driverShare:
+          type: number
+        ownerPayout:
+          type: number
+        periodStart:
+          type: string
+          format: date
+          nullable: true
+        periodEnd:
+          type: string
+          format: date
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - driverId
+        - totalRevenue
+        - totalExpenses
+        - totalTransfers
+        - netProfit
+        - driverShare
+        - ownerPayout
+        - createdAt
+
+    CreateSettlementBody:
+      type: object
+      properties:
+        driverId:
+          type: integer
+      required: [driverId]
+
+    AnalyticsData:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        totalTransfers:
+          type: number
+        netProfit:
+          type: number
+        driverCount:
+          type: integer
+        settlementCount:
+          type: integer
+        perDriver:
+          type: array
+          items:
+            $ref: "#/components/schemas/DriverAnalytics"
+      required:
+        - totalRevenue
+        - totalExpenses
+        - totalTransfers
+        - netProfit
+        - driverCount
+        - settlementCount
+        - perDriver
+
+    DriverAnalytics:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        driverName:
+          type: string
+        vehicleNumber:
+          type: string
+        totalRevenue:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        settlementCount:
+          type: integer
+        postponedBalance:
+          type: number
+        deferredCount:
+          type: integer
+        grossRevenue:
+          type: number
+        cashRevenue:
+          type: number
+      required:
+        - driverId
+        - driverName
+        - vehicleNumber
+        - totalRevenue
+        - totalExpenses
+        - netProfit
+        - settlementCount
+        - postponedBalance
+        - deferredCount
+        - grossRevenue
+        - cashRevenue
