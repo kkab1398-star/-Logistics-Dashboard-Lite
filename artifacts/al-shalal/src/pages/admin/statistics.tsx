@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart, Bar, LineChart, Line,
@@ -12,7 +13,7 @@ import {
 } from "recharts";
 import {
   BarChart2, TrendingUp, TrendingDown, FileDown, FileText,
-  Users, RefreshCw, ChevronDown, ChevronRight, Building2, Filter, X,
+  Users, RefreshCw, ChevronDown, ChevronRight, Building2, Filter, X, LayoutDashboard, Coins
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -248,318 +249,275 @@ export default function StatisticsPage() {
   const tooltipFormatter = (val: number) => `${fmt(val)} ${isAr ? "ريال" : "SAR"}`;
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2.5 rounded-full">
-            <BarChart2 className="h-6 w-6 text-primary" />
+    <div className={`space-y-8 pb-12 animate-in fade-in duration-500 ${isAr ? "font-arabic" : ""}`} dir={isAr ? "rtl" : "ltr"}>
+      
+      {/* Dynamic Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-slate-200 pb-6">
+        <div className="flex items-center gap-4">
+          <div className="bg-slate-900 p-3 rounded-2xl shadow-xl shadow-slate-900/10">
+            <LayoutDashboard className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{t("statistics")}</h1>
-            <p className="text-sm text-muted-foreground">{t("generalAnalytics")}</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t("statistics")}</h1>
+            <p className="text-slate-500 text-xs font-medium mt-1">الرؤية الاستراتيجية والأداء المالي لمؤسسة الشلال</p>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => { refetchGlobal(); refetchClients(); }}>
-            <RefreshCw className="h-3.5 w-3.5" />
-            {isAr ? "تحديث" : "Refresh"}
+        <div className="flex gap-2 flex-wrap w-full md:w-auto">
+          <Button variant="outline" size="sm" className="flex-1 md:flex-none h-10 rounded-xl font-bold border-slate-200 text-slate-600 gap-2 hover:bg-slate-50 transition-all" onClick={() => { refetchGlobal(); refetchClients(); }}>
+            <RefreshCw className="h-4 w-4" />
+            {isAr ? "تحديث البيانات" : "Refresh"}
           </Button>
           {globalSeries && globalSeries.length > 0 && (
-            <>
+            <div className="flex gap-2 flex-1 md:flex-none">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-xs"
+                className="flex-1 md:flex-none h-10 rounded-xl font-bold border-slate-200 text-slate-600 gap-2 hover:bg-slate-50 transition-all"
                 onClick={() => exportCsv(
                   globalSeries,
                   `al-shalal-statistics-${format(new Date(), "yyyy-MM-dd")}.csv`,
                   isAr
                 )}
               >
-                <FileDown className="h-3.5 w-3.5" />
+                <FileDown className="h-4 w-4 text-blue-500" />
                 {t("exportCsv")}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 text-xs"
+                className="flex-1 md:flex-none h-10 rounded-xl font-bold border-slate-200 text-slate-600 gap-2 hover:bg-slate-50 transition-all"
                 onClick={() => exportPdf(
                   globalSeries,
-                  isAr ? "تقرير إحصائي شامل" : "General Statistics Report",
+                  isAr ? "تقرير إحصائي شامل للمؤسسة" : "General Statistics Report",
                   null,
                   isAr
                 )}
               >
-                <FileText className="h-3.5 w-3.5" />
-                {t("exportData")} PDF
+                <FileText className="h-4 w-4 text-red-500" />
+                PDF
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Global KPI summary cards */}
+      {/* Global KPI Summary cards */}
       {globalLoading ? (
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          {[0, 1, 2].map(i => <Skeleton key={i} className="h-32 rounded-3xl shadow-sm" />)}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-green-500/5 border-green-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-xs text-muted-foreground">{t("totalRevenue")}</span>
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-3">
+          <Card className="border-none bg-white shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("totalRevenue")}</p>
+                <div className="bg-emerald-50 p-2.5 rounded-2xl text-emerald-600"><TrendingUp className="h-5 w-5" /></div>
               </div>
-              <p className="text-2xl font-bold text-green-700">{fmt(totalRev)}</p>
-              <p className="text-xs text-muted-foreground">{t("sar")}</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{fmt(totalRev)}</p>
+              <p className="text-xs font-bold text-emerald-600/70 mt-2">إجمالي الدخل المحقق (ريال)</p>
             </CardContent>
           </Card>
-          <Card className="bg-red-500/5 border-red-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-                <span className="text-xs text-muted-foreground">{t("totalExpenses")}</span>
+          
+          <Card className="border-none bg-white shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("totalExpenses")}</p>
+                <div className="bg-red-50 p-2.5 rounded-2xl text-red-600"><TrendingDown className="h-5 w-5" /></div>
               </div>
-              <p className="text-2xl font-bold text-red-700">{fmt(totalExp)}</p>
-              <p className="text-xs text-muted-foreground">{t("sar")}</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{fmt(totalExp)}</p>
+              <p className="text-xs font-bold text-red-600/70 mt-2">تكاليف التشغيل والوقود (ريال)</p>
             </CardContent>
           </Card>
-          <Card className={`${totalProfit >= 0 ? "bg-blue-500/5 border-blue-500/20" : "bg-red-500/5 border-red-500/20"}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <BarChart2 className="h-4 w-4 text-blue-600" />
-                <span className="text-xs text-muted-foreground">{t("netProfit")}</span>
+          
+          <Card className={`border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden group hover:scale-[1.02] transition-all ${totalProfit >= 0 ? "bg-blue-600 text-white" : "bg-red-600 text-white"}`}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-black opacity-60 uppercase tracking-widest text-white">{t("netProfit")}</p>
+                <div className="bg-white/20 p-2.5 rounded-2xl text-white"><Coins className="h-5 w-5" /></div>
               </div>
-              <p className={`text-2xl font-bold ${totalProfit >= 0 ? "text-blue-700" : "text-red-700"}`}>{fmt(totalProfit)}</p>
-              <p className="text-xs text-muted-foreground">{t("sar")}</p>
+              <p className="text-3xl font-black tracking-tighter">{fmt(totalProfit)}</p>
+              <p className="text-xs font-bold opacity-70 mt-2">صافي الفائدة المرجوة (ريال)</p>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* ── GENERAL ANALYTICS ── */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            {t("generalAnalytics")} — {t("monthlyBreakdown")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {globalLoading ? (
-            <Skeleton className="h-64 w-full rounded-lg" />
-          ) : !globalSeries || globalSeries.length === 0 ? (
-            <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
-              {t("noChartData")}
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={globalSeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 10 }} width={60} />
-                <Tooltip formatter={tooltipFormatter} />
-                <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} fill="#16a34a" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} fill="#dc2626" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="profit" name={isAr ? "صافي الربح" : "Net Profit"} fill="#2563eb" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Revenue trend line chart */}
-      {globalSeries && globalSeries.length > 1 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              {t("activityTrend")}
+      {/* ── GENERAL ANALYTICS GRAPHS ── */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+          <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/50">
+            <CardTitle className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+              <BarChart2 className="h-4 w-4 text-blue-500" />
+              توزيع الأرباح والنمو الشهري
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={globalSeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 10 }} width={60} />
-                <Tooltip formatter={tooltipFormatter} />
-                <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} stroke="#16a34a" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} stroke="#dc2626" strokeWidth={2} dot={{ r: 4 }} />
-                <Line type="monotone" dataKey="profit" name={isAr ? "صافي الربح" : "Net Profit"} stroke="#2563eb" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="p-6">
+            {globalLoading ? (
+              <Skeleton className="h-64 w-full rounded-2xl" />
+            ) : !globalSeries || globalSeries.length === 0 ? (
+              <div className="h-64 flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-xs border-2 border-dashed border-slate-100 rounded-3xl">
+                {t("noChartData")}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={globalSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fontWeight: 700 }} width={60} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    formatter={tooltipFormatter} 
+                  />
+                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '11px', fontWeight: 'bold' }} />
+                  <Bar dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} fill="#10b981" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} fill="#ef4444" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="profit" name={isAr ? "صافي الربح" : "Net Profit"} fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
-      )}
+
+        {globalSeries && globalSeries.length > 1 && (
+          <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+            <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/50">
+              <CardTitle className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                مؤشر المسار التشغيلي (Trend)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={globalSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fontWeight: 700 }} width={60} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    formatter={tooltipFormatter} 
+                  />
+                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '11px', fontWeight: 'bold' }} />
+                  <Line type="monotone" dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} stroke="#10b981" strokeWidth={4} dot={{ r: 6, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} stroke="#ef4444" strokeWidth={4} dot={{ r: 6, fill: "#ef4444", strokeWidth: 2, stroke: "#fff" }} activeDot={{ r: 8 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* ── TOP CLIENTS BY REVENUE ── */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex flex-col gap-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Building2 className="h-5 w-5 text-primary" />
-              {isAr ? "أبرز العملاء حسب الإيرادات" : "Top Clients by Revenue"}
-              {(clientDateFilter.from || clientDateFilter.to) && (
-                <span className="text-xs font-normal text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">
-                  {isAr ? "مُصفَّى" : "Filtered"}
-                </span>
-              )}
+      <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+        <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+              <Building2 className="h-4 w-4 text-blue-500" />
+              أبرز العملاء والشركات المتعاملة
             </CardTitle>
-            <div className="flex flex-wrap items-end gap-2">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">{isAr ? "من" : "From"}</span>
-                <Input
-                  type="date"
-                  value={clientFromInput}
-                  onChange={e => setClientFromInput(e.target.value)}
-                  className="h-8 text-xs w-36"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground">{isAr ? "إلى" : "To"}</span>
-                <Input
-                  type="date"
-                  value={clientToInput}
-                  onChange={e => setClientToInput(e.target.value)}
-                  className="h-8 text-xs w-36"
-                />
-              </div>
-              <Button
-                size="sm"
-                className="h-8 text-xs gap-1.5"
-                onClick={() => setClientDateFilter({ from: clientFromInput, to: clientToInput })}
-              >
-                <Filter className="h-3 w-3" />
-                {isAr ? "تصفية" : "Filter"}
-              </Button>
-              {(clientDateFilter.from || clientDateFilter.to) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5"
-                  onClick={() => {
-                    setClientFromInput("");
-                    setClientToInput("");
-                    setClientDateFilter({ from: "", to: "" });
-                  }}
-                >
-                  <X className="h-3 w-3" />
-                  {isAr ? "مسح الفلتر" : "Clear"}
-                </Button>
-              )}
+            <div className="flex flex-wrap items-center gap-2">
+               <div className="flex items-center bg-white rounded-xl ring-1 ring-slate-200 px-3 py-1.5 shadow-sm">
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter me-2">من</span>
+                 <Input type="date" value={clientFromInput} onChange={e => setClientFromInput(e.target.value)} className="h-6 w-28 border-none p-0 text-[10px] font-black focus-visible:ring-0" />
+               </div>
+               <div className="flex items-center bg-white rounded-xl ring-1 ring-slate-200 px-3 py-1.5 shadow-sm">
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter me-2">إلى</span>
+                 <Input type="date" value={clientToInput} onChange={e => setClientToInput(e.target.value)} className="h-6 w-28 border-none p-0 text-[10px] font-black focus-visible:ring-0" />
+               </div>
+               <Button size="sm" className="h-9 rounded-xl font-black text-[10px] px-4 bg-slate-900 hover:bg-slate-800" onClick={() => setClientDateFilter({ from: clientFromInput, to: clientToInput })}>
+                  تطبيق الفلتر
+               </Button>
+               {(clientDateFilter.from || clientDateFilter.to) && (
+                 <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-xl text-red-500 hover:bg-red-50" onClick={() => { setClientFromInput(""); setClientToInput(""); setClientDateFilter({ from: "", to: "" }); }}>
+                   <X className="h-4 w-4" />
+                 </Button>
+               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {clientsLoading ? (
-            <div className="space-y-2">
-              {[0, 1, 2, 3].map(i => <Skeleton key={i} className="h-12 rounded-lg" />)}
-            </div>
-          ) : clientsError ? (
-            <div className="h-40 flex flex-col items-center justify-center gap-2 text-sm">
-              <p className="text-red-600 font-medium">{isAr ? "تعذّر تحميل بيانات العملاء" : "Failed to load client data"}</p>
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => refetchClients()}>
-                <RefreshCw className="h-3.5 w-3.5 me-1.5" />
-                {isAr ? "إعادة المحاولة" : "Retry"}
-              </Button>
+            <div className="p-8 space-y-4">
+              {[0, 1, 2].map(i => <Skeleton key={i} className="h-16 rounded-2xl" />)}
             </div>
           ) : !clientStats || clientStats.length === 0 ? (
-            <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
-              {isAr ? "لا توجد بيانات إيرادات بعد" : "No revenue data yet"}
+            <div className="p-20 text-center text-slate-300">
+              <Building2 className="h-16 w-16 mx-auto mb-4 opacity-10" />
+              <p className="text-sm font-black uppercase tracking-widest">لا توجد بيانات عملاء في هذه الفترة</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {/* Horizontal bar chart for top 10 */}
-              <ResponsiveContainer width="100%" height={Math.max(160, Math.min(clientStats.length, 10) * 44)}>
-                <BarChart
-                  data={clientStats.slice(0, 10)}
-                  layout="vertical"
-                  margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10 }} width={60} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <YAxis type="category" dataKey="clientName" tick={{ fontSize: 11 }} width={110} />
-                  <Tooltip
-                    formatter={(val: number) => [`${fmt(val)} ${isAr ? "ريال" : "SAR"}`, isAr ? "الإيرادات" : "Revenue"]}
+            <div className="p-6 md:p-8 space-y-8">
+              <ResponsiveContainer width="100%" height={Math.max(200, Math.min(clientStats.length, 10) * 50)}>
+                <BarChart data={clientStats.slice(0, 10)} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="clientName" tick={{ fontSize: 11, fontWeight: 800, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    cursor={{ fill: '#f8fafc' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
                   />
-                  <Bar dataKey="totalRevenue" name={isAr ? "الإيرادات" : "Revenue"} fill="#c9a227" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="totalRevenue" name="الإيرادات" fill="#c9a227" radius={[0, 8, 8, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
 
-              {/* Ranked table */}
-              <div className="overflow-x-auto rounded-lg border border-border">
+              <div className="overflow-hidden rounded-2xl border border-slate-100">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-muted/50 text-muted-foreground text-xs">
-                      <th className="px-3 py-2 text-start font-medium w-8">#</th>
-                      <th className="px-3 py-2 text-start font-medium">{isAr ? "العميل" : "Client"}</th>
-                      <th className="px-3 py-2 text-end font-medium">{isAr ? "عدد الرحلات" : "Trips"}</th>
-                      <th className="px-3 py-2 text-end font-medium">{isAr ? "إجمالي الإيرادات" : "Total Revenue"}</th>
+                    <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-3 text-start w-12 font-black">#</th>
+                      <th className="px-6 py-3 text-start font-black">العميل المستفيد</th>
+                      <th className="px-6 py-3 text-center font-black">العمليات</th>
+                      <th className="px-6 py-3 text-end font-black">القيمة الكلية</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-50">
                     {clientStats.map((c, i) => {
                       const maxRev = clientStats[0]?.totalRevenue || 1;
                       const pct = (c.totalRevenue / maxRev) * 100;
                       const isExpanded = expandedClient === c.clientName;
                       return (
                         <Fragment key={c.clientName}>
-                          <tr
-                            className="border-t border-border hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => setExpandedClient(isExpanded ? null : c.clientName)}
-                          >
-                            <td className="px-3 py-2.5 text-muted-foreground font-mono text-xs">{i + 1}</td>
-                            <td className="px-3 py-2.5">
-                              <div className="flex items-center gap-1.5">
-                                {isExpanded
-                                  ? <ChevronDown className="h-3.5 w-3.5 text-primary shrink-0" />
-                                  : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                }
-                                <div className="flex flex-col gap-1">
-                                  <span className={`font-medium ${isExpanded ? "text-primary" : ""}`}>{c.clientName}</span>
-                                  <div className="h-1.5 rounded-full bg-muted overflow-hidden w-full max-w-[180px]">
-                                    <div
-                                      className="h-full rounded-full bg-amber-500"
-                                      style={{ width: `${pct}%` }}
-                                    />
+                          <tr className="hover:bg-slate-50/80 transition-all cursor-pointer group" onClick={() => setExpandedClient(isExpanded ? null : c.clientName)}>
+                            <td className="px-6 py-4 text-xs font-black text-slate-300 font-mono">{i + 1}</td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-xl transition-colors ${isExpanded ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"}`}>
+                                  {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />}
+                                </div>
+                                <div className="space-y-1.5 w-full max-w-[240px]">
+                                  <span className={`text-sm font-black ${isExpanded ? "text-blue-600" : "text-slate-900"}`}>{c.clientName}</span>
+                                  <div className="h-1 rounded-full bg-slate-100 overflow-hidden w-full">
+                                    <div className="h-full rounded-full bg-blue-500/40" style={{ width: `${pct}%` }} />
                                   </div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-3 py-2.5 text-end text-muted-foreground">
-                              {c.entryCount}
+                            <td className="px-6 py-4 text-center">
+                               <Badge className="bg-slate-50 text-slate-400 border-none font-black text-[9px] px-2 py-0.5">{c.entryCount} رحلة</Badge>
                             </td>
-                            <td className="px-3 py-2.5 text-end font-bold text-green-700 font-mono">
-                              {fmt(c.totalRevenue)}
-                              <span className="text-xs font-normal text-muted-foreground ms-1">{isAr ? "ريال" : "SAR"}</span>
+                            <td className="px-6 py-4 text-end">
+                              <span className="text-sm font-black text-slate-900 font-mono">{fmt(c.totalRevenue)}</span>
+                              <span className="text-[10px] font-bold text-slate-300 ms-1 uppercase tracking-widest">ريال</span>
                             </td>
                           </tr>
                           {isExpanded && (
-                            <tr key={`${c.clientName}-detail`} className="bg-muted/20 border-t border-border">
-                              <td colSpan={4} className="px-4 py-3">
+                            <tr className="bg-blue-50/30 animate-in slide-in-from-top-2 duration-300">
+                              <td colSpan={4} className="px-8 py-6">
                                 {clientTsLoading ? (
-                                  <Skeleton className="h-32 rounded-lg" />
-                                ) : !clientTimeseries || clientTimeseries.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground text-center py-4">
-                                    {isAr ? "لا توجد بيانات شهرية لهذا العميل" : "No monthly data for this client"}
-                                  </p>
+                                  <Skeleton className="h-32 rounded-2xl" />
                                 ) : (
-                                  <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-2">
-                                      {isAr ? `السجل الشهري — ${c.clientName}` : `Monthly history — ${c.clientName}`}
-                                    </p>
-                                    <ResponsiveContainer width="100%" height={160}>
-                                      <BarChart data={clientTimeseries} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                                        <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} width={40} />
-                                        <Tooltip formatter={(val: number) => [`${fmt(val)} ${isAr ? "ريال" : "SAR"}`, isAr ? "الإيرادات" : "Revenue"]} />
-                                        <Bar dataKey="revenue" name={isAr ? "الإيرادات" : "Revenue"} fill="#c9a227" radius={[3, 3, 0, 0]} />
+                                  <div className="space-y-4">
+                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-4">تحليل التدفق المالي للعميل</p>
+                                    <ResponsiveContainer width="100%" height={180}>
+                                      <BarChart data={clientTimeseries} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                        <XAxis dataKey="month" tick={{ fontSize: 9, fontWeight: 800, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                        <YAxis hide />
+                                        <Tooltip 
+                                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '11px' }}
+                                          formatter={(val: number) => [`${fmt(val)} ريال`, "الإيراد الشهرى"]} 
+                                        />
+                                        <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
                                       </BarChart>
                                     </ResponsiveContainer>
                                   </div>
@@ -579,63 +537,37 @@ export default function StatisticsPage() {
       </Card>
 
       {/* ── DRIVER-SPECIFIC ANALYTICS ── */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-5 w-5 text-primary" />
-              {t("driverAnalytics")}
+      <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden border-t-4 border-blue-600">
+        <CardHeader className="p-6 border-b border-slate-50">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <CardTitle className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
+              <Users className="h-4 w-4 text-blue-500" />
+              تحليل الأداء الفردي للسائقين
             </CardTitle>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
               {chartSeries && chartSeries.length > 0 && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={() => exportCsv(
-                      chartSeries,
-                      `driver-${selectedDriverId}-${format(new Date(), "yyyy-MM-dd")}.csv`,
-                      isAr
-                    )}
-                  >
-                    <FileDown className="h-3.5 w-3.5" />
-                    CSV
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="h-9 rounded-xl text-[10px] font-black px-3 text-slate-500 hover:bg-slate-50" onClick={() => exportCsv(chartSeries, `driver-${selectedDriverId}.csv`, isAr)}>
+                    تصدير CSV
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={() => exportPdf(
-                      chartSeries,
-                      isAr ? `تقرير السائق — ${selectedDriver?.name}` : `Driver Report — ${selectedDriver?.name}`,
-                      selectedDriver?.name ?? null,
-                      isAr
-                    )}
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    PDF
+                  <Button variant="ghost" size="sm" className="h-9 rounded-xl text-[10px] font-black px-3 text-slate-500 hover:bg-slate-50" onClick={() => exportPdf(chartSeries, `تقرير السائق ${selectedDriver?.name}`, selectedDriver?.name ?? null, isAr)}>
+                    تصدير PDF
                   </Button>
-                </>
+                </div>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 text-xs min-w-[160px]">
-                    <Users className="h-3.5 w-3.5" />
-                    {selectedDriver ? selectedDriver.name : (isAr ? "اختر سائقاً" : "Select Driver")}
-                    <ChevronDown className="h-3.5 w-3.5 ms-auto" />
+                  <Button variant="outline" size="sm" className="h-10 px-4 rounded-xl font-black text-xs border-slate-200 text-slate-700 bg-slate-50 hover:bg-white transition-all shadow-sm flex-1 sm:flex-none justify-between gap-4 min-w-[200px]">
+                    <span className="truncate">{selectedDriver ? selectedDriver.name : "اختر سائقاً من القائمة"}</span>
+                    <ChevronDown className="h-4 w-4 opacity-30" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-64 rounded-2xl border-slate-100 shadow-2xl p-2">
                   {drivers?.map(d => (
-                    <DropdownMenuItem
-                      key={d.id}
-                      onClick={() => setSelectedDriverId(d.id)}
-                      className={selectedDriverId === d.id ? "bg-muted" : ""}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{d.name}</span>
-                        <span className="text-xs text-muted-foreground font-mono">{d.vehicleNumber}</span>
+                    <DropdownMenuItem key={d.id} onClick={() => setSelectedDriverId(d.id)} className={`rounded-xl p-3 mb-1 cursor-pointer transition-all ${selectedDriverId === d.id ? "bg-blue-600 text-white" : "hover:bg-slate-50"}`}>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-black text-sm">{d.name}</span>
+                        <span className={`text-[10px] font-bold font-mono opacity-60 ${selectedDriverId === d.id ? "text-white" : "text-slate-400"}`}>{d.vehicleNumber}</span>
                       </div>
                     </DropdownMenuItem>
                   ))}
@@ -644,44 +576,52 @@ export default function StatisticsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 md:p-8">
           {selectedDriverId === null ? (
-            <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2">
-              <Users className="h-8 w-8 opacity-20" />
-              <p>{isAr ? "اختر سائقاً من القائمة لعرض إحصائياته" : "Select a driver from the dropdown to view their stats"}</p>
+            <div className="py-20 flex flex-col items-center justify-center text-slate-300 gap-4">
+              <Users className="h-16 w-16 opacity-5" />
+              <p className="text-xs font-black uppercase tracking-[0.2em]">بانتظار تحديد السائق لمباشرة التحليل</p>
             </div>
           ) : driverLoading ? (
-            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-80 w-full rounded-3xl" />
           ) : !chartSeries || chartSeries.length === 0 ? (
-            <div className="h-40 flex items-center justify-center text-muted-foreground text-sm">
+            <div className="py-20 text-center text-slate-300 font-black uppercase tracking-widest text-xs border-2 border-dashed border-slate-100 rounded-3xl">
               {t("noChartData")}
             </div>
           ) : (
-            <div className="space-y-4">
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={chartSeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} width={60} />
-                  <Tooltip formatter={tooltipFormatter} />
-                  <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} fill="#16a34a" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} fill="#dc2626" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="profit" name={isAr ? "صافي الربح" : "Net Profit"} fill="#2563eb" radius={[4, 4, 0, 0]} />
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartSeries} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fontWeight: 700 }} width={60} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                    formatter={tooltipFormatter} 
+                  />
+                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '11px', fontWeight: 'bold' }} />
+                  <Bar dataKey="revenue" name="إيرادات السائق" fill="#10b981" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="expenses" name="مصاريف التشغيل" fill="#ef4444" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              
               {chartSeries.length > 1 && (
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={chartSeries} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 10 }} width={60} />
-                    <Tooltip formatter={tooltipFormatter} />
-                    <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                    <Line type="monotone" dataKey="revenue" name={isAr ? "إيرادات" : "Revenue"} stroke="#16a34a" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="expenses" name={isAr ? "مصروفات" : "Expenses"} stroke="#dc2626" strokeWidth={2} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="pt-8 border-t border-slate-50">
+                   <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">مسار نمو الإيراد الصافي للسائق</p>
+                   <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={chartSeries} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="month" tick={{ fontSize: 9, fontWeight: 800 }} axisLine={false} tickLine={false} />
+                      <YAxis hide />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                        formatter={tooltipFormatter} 
+                      />
+                      <Line type="monotone" dataKey="revenue" name="الإيرادات" stroke="#10b981" strokeWidth={4} dot={{ r: 5, fill: "#10b981", strokeWidth: 2, stroke: "#fff" }} />
+                      <Line type="monotone" dataKey="profit" name="الربح الصافي" stroke="#3b82f6" strokeWidth={3} strokeDasharray="5 5" dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </div>
           )}
