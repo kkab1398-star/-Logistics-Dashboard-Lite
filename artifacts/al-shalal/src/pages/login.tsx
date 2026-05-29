@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, ShieldCheck, ChevronRight, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Truck, ShieldCheck, ChevronRight, Eye, EyeOff, AlertCircle, Globe, LockKeyhole, User } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -58,147 +58,65 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="flex gap-2 mb-8">
+    <div className={`min-h-screen bg-[#f1f5f9] flex flex-col items-center justify-center p-6 relative overflow-hidden ${isRtl ? "font-arabic" : ""}`} dir={isRtl ? "rtl" : "ltr"}>
+      
+      {/* Background Decoration */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
+           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-slate-900/10 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Language Switcher */}
+      <div className="z-10 flex p-1 bg-white/50 backdrop-blur-md rounded-full border border-slate-200 mb-12 shadow-sm">
         {(["ar", "en", "ur"] as const).map(l => (
           <button key={l} onClick={() => setLang(l)}
-            className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
-              lang === l ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"
+            className={`px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              lang === l ? "bg-slate-900 text-white shadow-md" : "text-slate-400 hover:text-slate-600"
             }`}>
             {l === "ar" ? "العربية" : l === "en" ? "English" : "اردو"}
           </button>
         ))}
       </div>
 
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center mb-2">
-          <h1 className="text-4xl font-bold text-primary mb-1">{t("appName")}</h1>
-          <p className="text-sm text-muted-foreground">{t("invoiceHeader")}</p>
+      <div className="w-full max-w-md z-10 space-y-8">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-xl mb-4 group transition-transform hover:scale-110">
+            <Truck className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">{t("appName")}</h1>
+          <div className="flex items-center justify-center gap-2">
+            <span className="h-[1px] w-8 bg-slate-300" />
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">{t("invoiceHeader")}</p>
+            <span className="h-[1px] w-8 bg-slate-300" />
+          </div>
         </div>
 
         {view === "choose" && (
-          <div className="grid gap-4">
-            <Card className="cursor-pointer hover:border-primary/60 transition-colors group"
+          <div className="grid gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="border-none shadow-xl shadow-slate-200/50 cursor-pointer hover:ring-2 hover:ring-blue-500/50 transition-all duration-300 group overflow-hidden relative"
               onClick={() => setView("admin")}>
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="bg-primary/10 p-3 rounded-full group-hover:bg-primary/20 transition-colors">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
+              <CardContent className="flex items-center gap-5 p-7">
+                <div className="bg-amber-500 p-4 rounded-2xl shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform">
+                  <ShieldCheck className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-lg">{t("imAdmin")}</p>
-                  <p className="text-sm text-muted-foreground">{t("globalAnalytics")}</p>
+                  <p className="font-black text-slate-900 text-lg leading-none mb-1">{t("imAdmin")}</p>
+                  <p className="text-xs font-medium text-slate-400">{t("globalAnalytics")}</p>
                 </div>
-                <ChevronRight className={`h-5 w-5 text-muted-foreground ${isRtl ? "rotate-180" : ""}`} />
+                <ChevronRight className={`h-5 w-5 text-slate-300 group-hover:text-amber-500 transition-colors ${isRtl ? "rotate-180" : ""}`} />
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:border-primary/60 transition-colors group"
+            <Card className="border-none shadow-xl shadow-slate-200/50 cursor-pointer hover:ring-2 hover:ring-blue-600/50 transition-all duration-300 group overflow-hidden"
               onClick={() => setView("driver")}>
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="bg-primary/10 p-3 rounded-full group-hover:bg-primary/20 transition-colors">
-                  <Truck className="h-6 w-6 text-primary" />
+              <CardContent className="flex items-center gap-5 p-7">
+                <div className="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                  <Truck className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-lg">{t("imDriver")}</p>
-                  <p className="text-sm text-muted-foreground">{t("loginWithCredentials")}</p>
+                  <p className="font-black text-slate-900 text-lg leading-none mb-1">{t("imDriver")}</p>
+                  <p className="text-xs font-medium text-slate-400">{t("loginWithCredentials")}</p>
                 </div>
-                <ChevronRight className={`h-5 w-5 text-muted-foreground ${isRtl ? "rotate-180" : ""}`} />
+                <ChevronRight className={`h-5 w-5 text-slate-300 group-hover:text-blue-600 transition-colors ${isRtl ? "rotate-180" : ""}`} />
               </CardContent>
             </Card>
-          </div>
-        )}
-
-        {view === "admin" && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                {t("imAdmin")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t("enterAdminCode")}</Label>
-                <Input
-                  type="password"
-                  value={code}
-                  onChange={e => { setCode(e.target.value); setCodeError(false); }}
-                  onKeyDown={e => e.key === "Enter" && handleAdminLogin()}
-                  className={`h-12 text-lg tracking-widest ${codeError ? "border-destructive" : ""}`}
-                  placeholder="••••"
-                />
-                {codeError && <p className="text-destructive text-sm">{t("wrongCode")}</p>}
-              </div>
-              <Button className="w-full h-12" onClick={handleAdminLogin}>{t("confirm")}</Button>
-              <Button variant="ghost" className="w-full" onClick={() => { setView("choose"); setCode(""); setCodeError(false); }}>
-                {t("cancel")}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {view === "driver" && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Truck className="h-5 w-5 text-primary" />
-                {t("imDriver")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t("username")}</Label>
-                <Input
-                  value={username}
-                  onChange={e => { setUsername(e.target.value); setLoginError(null); }}
-                  onKeyDown={e => e.key === "Enter" && handleDriverLogin()}
-                  className="h-12 bg-muted/50"
-                  dir="ltr"
-                  placeholder="username"
-                  autoComplete="username"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("password")}</Label>
-                <div className="relative">
-                  <Input
-                    type={showPass ? "text" : "password"}
-                    value={password}
-                    onChange={e => { setPassword(e.target.value); setLoginError(null); }}
-                    onKeyDown={e => e.key === "Enter" && handleDriverLogin()}
-                    className="h-12 bg-muted/50 pe-12"
-                    dir="ltr"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 end-3 flex items-center text-muted-foreground"
-                    onClick={() => setShowPass(v => !v)}>
-                    {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {loginError && (
-                <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                  loginError === "frozen" ? "bg-amber-50 border border-amber-200 text-amber-700" : "bg-destructive/10 border border-destructive/20 text-destructive"
-                }`}>
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  {loginError === "frozen" ? t("accountFrozen") : t("loginFailed")}
-                </div>
-              )}
-
-              <Button className="w-full h-12" onClick={handleDriverLogin} disabled={loading || !username || !password}>
-                {loading ? "..." : t("confirm")}
-              </Button>
-              <Button variant="ghost" className="w-full" onClick={() => { setView("choose"); setUsername(""); setPassword(""); setLoginError(null); }}>
-                {t("cancel")}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
-}
