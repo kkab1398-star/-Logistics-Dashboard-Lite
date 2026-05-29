@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "comment": "Vercel config for Al-Shalal Logistics. The Express API is deployed as a single serverless function; the React frontend is built to static files.",
   "builds": [
     {
       "src": "artifacts/al-shalal/package.json",
