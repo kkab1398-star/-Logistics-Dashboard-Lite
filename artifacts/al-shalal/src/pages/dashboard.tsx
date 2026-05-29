@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   PlusCircle, Receipt, TrendingDown, TrendingUp, AlertCircle, Scale,
-  ArrowUpFromLine, ShieldCheck, Fuel, User, Activity, FileText, CheckCircle, Clock,
+  ArrowUpFromLine, ShieldCheck, Fuel, User, Activity, FileText, CheckCircle, Clock, ChevronLeft, Wallet
 } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const { t, lang } = useI18n();
-  const { role, driverId } = useAuth();
+  const { role, driverId, driverName } = useAuth();
   const isRtl = lang === "ar" || lang === "ur";
 
   const summaryParams = role === "driver" && driverId
@@ -143,300 +143,168 @@ ${inv.clientName ? `<div style="background:#f8f9fa;border-radius:8px;padding:12p
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const kindStyle = {
-    revenue: { bg: "bg-green-500/10", icon: TrendingUp, iconColor: "text-green-600", textColor: "text-green-700", border: "border-l-4 border-green-500" },
-    expense: { bg: "bg-red-500/10", icon: TrendingDown, iconColor: "text-red-600", textColor: "text-red-700", border: "border-l-4 border-red-500" },
-    transfer: { bg: "bg-amber-500/10", icon: ArrowUpFromLine, iconColor: "text-amber-600", textColor: "text-amber-700", border: "border-l-4 border-amber-500" },
+    revenue: { bg: "bg-emerald-500/10", icon: TrendingUp, iconColor: "text-emerald-600", textColor: "text-emerald-700", border: "border-r-4 border-emerald-500" },
+    expense: { bg: "bg-red-500/10", icon: TrendingDown, iconColor: "text-red-600", textColor: "text-red-700", border: "border-r-4 border-red-500" },
+    transfer: { bg: "bg-blue-500/10", icon: ArrowUpFromLine, iconColor: "text-blue-600", textColor: "text-blue-700", border: "border-r-4 border-blue-500" },
   };
 
   return (
-    <div className="space-y-6">
-      {role === "driver" ? (
-        <>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("dashboard")}</h1>
-          </div>
-          <Link href="/revenues/new" className="block">
-            <Button
-              size="lg"
-              className="w-full h-20 text-xl font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30 gap-3"
-            >
-              <TrendingUp className="h-7 w-7" />
-              {t("addRevenue")}
+    <div className={`space-y-8 animate-in fade-in duration-700 ${isRtl ? "font-arabic" : ""}`} dir={isRtl ? "rtl" : "ltr"}>
+      
+      {/* Welcome Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t("dashboard")}</h1>
+          <p className="text-slate-500 font-medium mt-1">مرحباً بك مجدداً، <span className="text-blue-600 font-bold">{driverName || "مدير النظام"}</span></p>
+        </div>
+        {role === "admin" && (
+           <Link href="/admin">
+            <Button variant="outline" className="rounded-xl border-slate-200 bg-white shadow-sm gap-2 font-bold text-slate-600 hover:bg-slate-50">
+              <ShieldCheck className="h-4 w-4 text-amber-500" />
+              لوحة تحكم الإدارة الشاملة
             </Button>
           </Link>
-          <div className="flex gap-2 flex-wrap -mt-2">
-            <Link href="/expenses/new" className="flex-1 min-w-[140px]">
-              <Button size="sm" variant="outline" className="w-full">
-                <PlusCircle className={`h-4 w-4 ${isRtl ? "ml-1.5" : "mr-1.5"}`} />
-                {t("addExpense")}
-              </Button>
+        )}
+      </div>
+
+      {role === "driver" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Action Card */}
+          <div className="lg:col-span-2 space-y-6">
+            <Link href="/revenues/new" className="block group">
+              <Card className="bg-slate-900 border-none shadow-2xl shadow-blue-900/20 overflow-hidden relative transition-all duration-300 active:scale-[0.98]">
+                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[150%] bg-blue-600/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-blue-500/30 transition-all" />
+                <CardContent className="p-8 flex items-center justify-between relative z-10">
+                  <div className="space-y-2">
+                    <p className="text-blue-400 text-xs font-black uppercase tracking-[0.2em]">تسجيل إيراد جديد</p>
+                    <h2 className="text-3xl font-black text-white">{t("addRevenue")}</h2>
+                    <p className="text-slate-400 text-sm font-medium">سجل رحلة جديدة أو خدمة نقل فورية</p>
+                  </div>
+                  <div className="bg-white/10 p-5 rounded-2xl group-hover:bg-blue-600 transition-colors duration-300">
+                    <TrendingUp className="h-10 w-10 text-white" />
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
-            <Link href="/transfers/new" className="flex-1 min-w-[140px]">
-              <Button size="sm" variant="outline" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
-                <ArrowUpFromLine className={`h-4 w-4 ${isRtl ? "ml-1.5" : "mr-1.5"}`} />
-                {t("addTransfer")}
-              </Button>
-            </Link>
-          </div>
-        </>
-      ) : (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("dashboard")}</h1>
-            {role === "admin" && (
-              <Link href="/admin">
-                <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  {t("globalAnalytics")}
+
+            <div className="grid grid-cols-2 gap-4">
+               <Link href="/expenses/new">
+                <Button className="w-full h-16 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-900 font-black hover:bg-slate-50 gap-3">
+                  <div className="bg-red-50 p-2 rounded-lg"><PlusCircle className="h-5 w-5 text-red-600" /></div>
+                  {t("addExpense")}
                 </Button>
               </Link>
-            )}
+              <Link href="/transfers/new">
+                <Button className="w-full h-16 rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-900 font-black hover:bg-slate-50 gap-3">
+                  <div className="bg-amber-50 p-2 rounded-lg"><ArrowUpFromLine className="h-5 w-5 text-amber-600" /></div>
+                  {t("addTransfer")}
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <Link href="/expenses/new">
-              <Button size="sm" variant="outline">
-                <PlusCircle className={`h-4 w-4 ${isRtl ? "ml-1.5" : "mr-1.5"}`} />
-                {t("addExpense")}
-              </Button>
-            </Link>
-            <Link href="/revenues/new">
-              <Button size="sm" variant="outline" className="border-green-500 text-green-700 hover:bg-green-50">
-                <TrendingUp className={`h-4 w-4 ${isRtl ? "ml-1.5" : "mr-1.5"}`} />
-                {t("addRevenue")}
-              </Button>
-            </Link>
-            <Link href="/transfers/new">
-              <Button size="sm" variant="outline" className="border-amber-500 text-amber-700 hover:bg-amber-50">
-                <ArrowUpFromLine className={`h-4 w-4 ${isRtl ? "ml-1.5" : "mr-1.5"}`} />
-                {t("addTransfer")}
-              </Button>
-            </Link>
+
+          {/* Cycle Quick View */}
+          <div className="lg:col-span-1">
+            <Card className="h-full border-none shadow-xl shadow-slate-200/50 rounded-2xl bg-white overflow-hidden relative">
+              <CardHeader className="border-b border-slate-50 flex flex-row items-center justify-between pb-4">
+                <CardTitle className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-blue-600" />
+                  {t("currentCycle")}
+                </CardTitle>
+                <Link href="/settle">
+                  <Button variant="ghost" size="sm" className="h-8 rounded-lg text-blue-600 font-bold hover:bg-blue-50">التفاصيل</Button>
+                </Link>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
+                {cycleLoading ? <Skeleton className="h-40 w-full rounded-xl" /> : cycle && (
+                  <>
+                    <div className="flex justify-between items-end border-b border-slate-50 pb-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("netProfit")}</p>
+                        <p className={`text-3xl font-black tracking-tight ${Number(cycle.netProfit) >= 0 ? "text-slate-900" : "text-red-600"}`}>
+                          {fmt(cycle.netProfit)} <span className="text-xs font-bold text-slate-400">ريال</span>
+                        </p>
+                      </div>
+                      <div className={`px-2 py-1 rounded-lg text-[10px] font-black ${Number(cycle.netProfit) >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>
+                        {Number(cycle.netProfit) >= 0 ? "دورة رابحة" : "عجز حالي"}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">{t("totalRevenue")}</p>
+                        <p className="text-sm font-black text-slate-900 mt-1">{fmt(cycle.totalRevenue)}</p>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">{t("grossRevenue")}</p>
+                        <p className="text-sm font-black text-emerald-600 mt-1">{fmt(cycle.grossRevenue)}</p>
+                      </div>
+                    </div>
+
+                    {Number(cycle.postponedBalance) < 0 && (
+                       <div className="bg-red-950 p-4 rounded-xl shadow-lg shadow-red-900/10 border-l-4 border-red-500">
+                        <div className="flex items-center gap-2 mb-1">
+                          <AlertCircle className="h-3.5 w-3.5 text-red-400" />
+                          <p className="text-[10px] font-black text-red-200 uppercase tracking-widest">{t("postponedAmounts")}</p>
+                        </div>
+                        <p className="text-lg font-black text-white">{fmt(cycle.postponedBalance)} <span className="text-[10px] text-red-300">ريال معلق</span></p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
 
-      {/* Expense summary cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Breakdown Section */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {isLoadingSummary ? (
-          Array(4).fill(0).map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><Skeleton className="h-12 w-full" /></CardContent></Card>
-          ))
+          Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
         ) : summary ? (
           <>
-            <Card className="bg-primary text-primary-foreground">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-primary-foreground/80">{t("totalExpenses")}</CardTitle>
-                <TrendingDown className="h-4 w-4 text-primary-foreground/80" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{fmt(summary.totalAmount)} <span className="text-sm font-normal opacity-80">{t("sar")}</span></div>
-                {hasSettledExpenses && summary.expenseCount === 0 ? (
-                  <p className="text-xs text-primary-foreground/60 mt-1 italic">{t("noCurrentCycleExpenses")}</p>
-                ) : (
-                  <p className="text-xs text-primary-foreground/60 mt-1">{summary.expenseCount} {t("expenses")}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{t("diesel")}</CardTitle>
-                <Fuel className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{fmt(summary.dieselTotal)} <span className="text-sm font-normal text-muted-foreground">{t("sar")}</span></div>
-                <p className="text-xs text-muted-foreground mt-1">{fmt(summary.dieselLiters)} {t("liters")} @ 1.79</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{t("maintenance")}</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{fmt(summary.maintenanceTotal)} <span className="text-sm font-normal text-muted-foreground">{t("sar")}</span></div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{t("oil")} & {t("other")}</CardTitle>
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {(Number(summary.oilTotal) + Number(summary.otherTotal)).toFixed(2)}
-                  <span className="text-sm font-normal text-muted-foreground"> {t("sar")}</span>
+            <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl group transition-transform hover:scale-[1.02]">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-slate-900 p-2 rounded-xl text-white group-hover:bg-blue-600 transition-colors"><TrendingDown className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("totalExpenses")}</span>
+                </div>
+                <div className="text-3xl font-black text-slate-900 tracking-tight">{fmt(summary.totalAmount)}</div>
+                <div className="mt-2 text-[10px] font-bold text-slate-400 flex items-center gap-1.5">
+                  <Activity className="h-3 w-3" /> {summary.expenseCount} عملية مقيدة
                 </div>
               </CardContent>
             </Card>
-          </>
-        ) : null}
-      </div>
 
-      {/* Cycle summary (driver only) */}
-      {role === "driver" && driverId && (
-        <Card className="border-2 border-primary/20 bg-primary/3">
-          <CardHeader className="flex flex-row items-center justify-between border-b pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Scale className="h-5 w-5 text-primary" />
-              {t("currentCycle")}
-            </CardTitle>
-            <Link href="/settle">
-              <Button size="sm" className="gap-1.5">
-                <Scale className="h-4 w-4" />
-                {t("settle")}
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {cycleLoading ? (
-              <div className="grid gap-3 md:grid-cols-3">
-                {[0,1,2].map(i => <Skeleton key={i} className="h-16 w-full" />)}
-              </div>
-            ) : cycle ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">{t("totalRevenue")}</p>
-                  <p className="text-xl font-bold text-green-700">{fmt(cycle.totalRevenue)} {t("sar")}</p>
-                  <p className="text-xs text-muted-foreground">{cycle.revenueCount} entries</p>
+            <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl group transition-transform hover:scale-[1.02]">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-blue-50 p-2 rounded-xl text-blue-600"><Fuel className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("diesel")}</span>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">{t("netProfit")}</p>
-                  <p className={`text-xl font-bold ${Number(cycle.netProfit) >= 0 ? "text-primary" : "text-destructive"}`}>
-                    {fmt(cycle.netProfit)} {t("sar")}
-                  </p>
-                  <Badge variant="outline" className="text-xs">{t("driverShare")}: {fmt(cycle.driverShare)}</Badge>
+                <div className="text-3xl font-black text-slate-900 tracking-tight">{fmt(summary.dieselTotal)}</div>
+                <div className="mt-2 text-[10px] font-bold text-blue-600 flex items-center gap-1.5">
+                  {fmt(summary.dieselLiters)} {t("liters")} تقريباً
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">{t("totalTransfers")}</p>
-                  {Number(cycle.totalTransfers) === 0 ? (
-                    <p className="text-sm text-muted-foreground italic leading-snug">{t("noCurrentCycleTransfers")}</p>
-                  ) : (
-                    <>
-                      <p className="text-xl font-bold text-amber-700">{fmt(cycle.totalTransfers)} {t("sar")}</p>
-                      <p className="text-xs text-muted-foreground">{cycle.transferCount} entries</p>
-                    </>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">{t("grossRevenue")}</p>
-                  <p className="text-xl font-bold text-green-700">{fmt(cycle.grossRevenue)} {t("sar")}</p>
-                </div>
-                <div className={`space-y-1 rounded-lg p-3 -m-1 ${
-                  Number(cycle.postponedBalance) < 0
-                    ? "bg-red-50 border border-red-200"
-                    : "border border-transparent"
-                }`}>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" />
-                    {t("postponedAmounts")}
-                  </p>
-                  {Number(cycle.postponedBalance) < 0 ? (
-                    <>
-                      <p className="text-xl font-bold text-red-700">{fmt(cycle.postponedBalance)} {t("sar")}</p>
-                      <p className="text-xs text-red-600">{cycle.deferredCount} {t("revenues")}</p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic leading-snug">{t("postponedDesc")}</p>
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
 
-      {/* Unified Recent Activity Feed (driver only) */}
-      {role === "driver" && driverId && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              {t("recentActivity")}
-            </CardTitle>
-            <Link href="/revenues">
-              <Button variant="ghost" size="sm" className="text-xs gap-1">
-                <TrendingUp className="h-3.5 w-3.5" />
-                {t("revenues")}
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="p-0">
-            {feedItems.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <Activity className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                <p className="text-sm">{t("noActivity")}</p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {feedItems.slice(0, 15).map(item => {
-                  const s = kindStyle[item.kind];
-                  const Icon = s.icon;
-                  return (
-                    <div key={item.id} className={`flex items-center justify-between p-4 hover:bg-muted/30 transition-colors ${s.border}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`${s.bg} p-2 rounded-full shrink-0`}>
-                          <Icon className={`h-4 w-4 ${s.iconColor}`} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-sm leading-none">{item.label}</p>
-                            {item.hasSavedInvoice && item.kind === "revenue" && item.revenueId && (
-                              <button
-                                onClick={() => viewSavedInvoiceInFeed(item.revenueId!)}
-                                title={t("viewSavedInvoice")}
-                                className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-1.5 py-0.5 hover:bg-emerald-100 transition-colors shrink-0"
-                              >
-                                <CheckCircle className="h-2.5 w-2.5" />
-                                {t("invoiceLinked")}
-                              </button>
-                            )}
-                          </div>
-                          {item.subLabel && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.subLabel}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-0.5 font-mono" dir="ltr">
-                            {format(new Date(item.createdAt), "yyyy-MM-dd")} | {format(new Date(item.createdAt), "HH:mm")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className={`font-bold ${s.textColor}`}>
-                          {item.kind === "expense" ? "−" : item.kind === "transfer" ? "↑" : "+"}
-                          {Number(item.amount).toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t("sar")}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl group transition-transform hover:scale-[1.02]">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-red-50 p-2 rounded-xl text-red-600"><AlertCircle className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("maintenance")}</span>
+                </div>
+                <div className="text-3xl font-black text-slate-900 tracking-tight">{fmt(summary.maintenanceTotal)}</div>
+                <div className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest">مصاريف الصيانة والاصلاح</div>
+              </CardContent>
+            </Card>
 
-      {/* Admin: show simple recent expenses */}
-      {role !== "driver" && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-            <CardTitle>{t("recentExpenses")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="p-8 text-center text-muted-foreground">
-              <ShieldCheck className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <Link href="/admin">
-                <Button variant="link" className="gap-1">
-                  <ShieldCheck className="h-4 w-4" />
-                  {t("adminDashboard")}
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
+            <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl group transition-transform hover:scale-[1.02]">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-emerald-50 p-2 rounded-xl text-emerald-600"><Receipt className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الزيوت والمتفرقات</span>
+                </div>
+                <div className="text-3xl font-black text-slate-900 tracking-tight">
