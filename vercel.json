@@ -4,6 +4,13 @@
   "outputDirectory": "artifacts/al-shalal/dist",
   "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": true
+    }
+  ],
   "env": {
     "NODE_ENV": "production"
   }
