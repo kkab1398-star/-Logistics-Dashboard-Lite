@@ -1,13 +1,9 @@
 {
   "version": 2,
   "buildCommand": "pnpm --filter @workspace/al-shalal build",
-  "outputDirectory": "artifacts/al-shalal/dist",
+  "outputDirectory": "artifacts/al-shalal/dist/public",
   "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
   "framework": null,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "artifacts/al-shalal/dist/$1" }
-  ],
   "redirects": [
     { "source": "/", "destination": "/dashboard", "permanent": true }
   ],
