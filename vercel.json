@@ -1,7 +1,15 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "artifacts/al-shalal/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "buildCommand": "pnpm --filter @workspace/al-shalal build",
-  "outputDirectory": "artifacts/al-shalal/dist",
   "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
   "framework": "vite",
   "rewrites": [
