@@ -208,6 +208,12 @@ export default function RevenueList() {
   const [repaySuccess, setRepaySuccess] = useState(false);
   const [repayError, setRepayError] = useState<string | null>(null);
 
+  const params = driverId ? { driverId, activeOnly: !allTime } : { activeOnly: !allTime };
+
+  const { data: revenues, isLoading } = useListRevenues(params, {
+    query: { queryKey: getListRevenuesQueryKey(params) },
+  });
+
   async function handleRepay(id: number) {
     setRepayError(null);
     try {
@@ -222,9 +228,440 @@ export default function RevenueList() {
       setRepaySuccess(true);
       setTimeout(() => setRepaySuccess(false), 3000);
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number }; status?: number })?.response?.status
-        ?? (err as { status?: number })?.status;
+      const status =
+        (err as { response?: { status?: number }; status?: number })?.response?.status ??
+        (err as { status?: number })?.status;
       const settled = status === 409;
       const msg = settled
-        ? (lang === "ar" ? "تمت تسوية هذا الإيراد بالفعل." : lang === "ur" ? "یہ آمدنی پہلے ہی طے ہو چکی ہے۔" : "This revenue is already settled.")
-        : (lang === "ar" ? "فشل تأكيد الدفع
+        ? lang === "ar"
+          ? "تمت تسوية هذا الإيراد بالفعل."
+          : lang === "ur"
+          ? "یہ آمدنی پہلے ہی طے ہو چکی ہے۔"
+          : "This revenue is already settled."
+        : lang === "ar"
+        ? "فشل تأكيد الدفع. حاول مجدداً."
+        : lang === "ur"
+        ? "ادائیگی کی تصدیق ناکام ہوئی۔ دوبارہ کوشش کریں۔"
+        : "Failed to confirm payment. Please try again.";
+      setRepayError(msg);
+      setTimeout(() => setRepayError(null), 4000);
+    }
+  }
+
+  async function handleEdit(rev: RevenueWithInvoice) {
+    setEditingId(rev.id);
+    setEditForm({
+      amount: String(rev.amount),
+      clientName: rev.clientName || "",
+      description: rev.description || "",
+      date: rev.date?.slice(0, 10) || "",
+    });
+    setEditError(null);
+    setEditSuccess(false);
+  }
+
+  async function handleEditSave(id: number) {
+    setEditError(null);
+    try {
+      await updateRevenue.mutateAsync({
+        id,
+        data: {
+          amount: editForm.amount,
+          clientName: editForm.clientName || null,
+          description: editForm.description || null,
+          date: editForm.date,
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: getListRevenuesQueryKey(params) });
+      setEditSuccess(true);
+      setEditingId(null);
+      setTimeout(() => setEditSuccess(false), 3000);
+    } catch {
+      setEditError(
+        lang === "ar"
+          ? "فشل تعديل الإيراد."
+          : lang === "ur"
+          ? "آمدنی میں ترمیم ناکام رہی۔"
+          : "Failed to update revenue."
+      );
+    }
+  }
+
+  async function handleDelete(id: number) {
+    setDeleteError(null);
+    try {
+      await deleteRevenue.mutateAsync({ id });
+      await queryClient.invalidateQueries({ queryKey: getListRevenuesQueryKey(params) });
+      setConfirmDeleteId(null);
+      setDeleteSuccess(true);
+      setTimeout(() => setDeleteSuccess(false), 3000);
+    } catch {
+      setDeleteError(
+        lang === "ar"
+          ? "فشل حذف الإيراد."
+          : lang === "ur"
+          ? "آمدنی حذف کرنا ناکام رہا۔"
+          : "Failed to delete revenue."
+      );
+    }
+  }
+
+  const fmt = (n: number | string | null | undefined) => Number(n || 0).toFixed(2);
+
+  const sorted = [...(revenues || [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  ) as RevenueWithInvoice[];
+
+  return (
+    <div
+      className={`space-y-8 animate-in fade-in duration-500 pb-10 ${isRtl ? "font-arabic" : ""}`}
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-6">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="bg-emerald-600 p-2 rounded-xl">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t("revenues")}</h1>
+          </div>
+          <p className="text-slate-500 text-xs font-medium">
+            {lang === "ar"
+              ? "سجل الإيرادات والرحلات المنجزة"
+              : lang === "ur"
+              ? "آمدنی اور مکمل سفر کا ریکارڈ"
+              : "Revenue and completed trips record"}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`rounded-xl border-slate-200 font-bold text-xs gap-2 ${allTime ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600"}`}
+            onClick={() => setAllTime((v) => !v)}
+          >
+            <ListFilter className="h-3.5 w-3.5" />
+            {allTime
+              ? lang === "ar" ? "الكل" : lang === "ur" ? "سب" : "All"
+              : lang === "ar" ? "النشطة فقط" : lang === "ur" ? "صرف فعال" : "Active only"}
+          </Button>
+          <Link href="/revenues/new">
+            <Button
+              size="lg"
+              className="h-11 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-xl shadow-emerald-600/20 gap-2 transition-all active:scale-95"
+            >
+              <TrendingUp className="h-4 w-4" />
+              {t("addRevenue")}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Feedback banners */}
+      {editSuccess && (
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm font-bold">
+          <CheckCircle className="h-4 w-4" />
+          {lang === "ar" ? "تم تعديل الإيراد بنجاح" : lang === "ur" ? "آمدنی کامیابی سے تبدیل ہوئی" : "Revenue updated successfully"}
+        </div>
+      )}
+      {deleteSuccess && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-bold">
+          <Trash2 className="h-4 w-4" />
+          {lang === "ar" ? "تم حذف الإيراد" : lang === "ur" ? "آمدنی حذف ہوگئی" : "Revenue deleted"}
+        </div>
+      )}
+      {repaySuccess && (
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl px-4 py-3 text-sm font-bold">
+          <BadgeCheck className="h-4 w-4" />
+          {lang === "ar" ? "تم تأكيد الدفع بنجاح" : lang === "ur" ? "ادائیگی کامیابی سے تصدیق ہوئی" : "Payment confirmed successfully"}
+        </div>
+      )}
+      {repayError && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-bold">
+          <X className="h-4 w-4" />
+          {repayError}
+        </div>
+      )}
+      {deleteError && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm font-bold">
+          <X className="h-4 w-4" />
+          {deleteError}
+        </div>
+      )}
+
+      {/* Revenue List */}
+      <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl overflow-hidden">
+        <CardContent className="p-0 divide-y divide-slate-100">
+          {isLoading ? (
+            Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
+          ) : sorted.length === 0 ? (
+            <div className="py-20 text-center">
+              <Receipt className="h-16 w-16 mx-auto text-slate-200 mb-4" />
+              <p className="text-slate-400 font-black text-lg">
+                {lang === "ar" ? "لا توجد إيرادات مسجلة" : lang === "ur" ? "کوئی آمدنی درج نہیں" : "No revenues recorded"}
+              </p>
+              <p className="text-slate-300 text-sm font-medium mt-1">
+                {lang === "ar" ? "ابدأ بتسجيل إيراد جديد" : lang === "ur" ? "نئی آمدنی درج کریں" : "Start by adding a new revenue"}
+              </p>
+            </div>
+          ) : (
+            sorted.map((rev) => {
+              const isEditing = editingId === rev.id;
+              const isSettled = !!rev.settlementId;
+              const isDeferred = rev.isDeferred;
+              const isPaid = rev.isPaid;
+
+              return (
+                <div key={rev.id} className="p-5 hover:bg-slate-50/50 transition-colors">
+                  {isEditing ? (
+                    /* Edit Mode */
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {t("amount")}
+                          </Label>
+                          <Input
+                            type="number"
+                            value={editForm.amount}
+                            onChange={(e) => setEditForm((f) => ({ ...f, amount: e.target.value }))}
+                            className="h-10 rounded-xl border-slate-200 font-bold text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            {t("date")}
+                          </Label>
+                          <Input
+                            type="date"
+                            value={editForm.date}
+                            onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+                            className="h-10 rounded-xl border-slate-200 font-bold text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          {t("clientName")}
+                        </Label>
+                        <Input
+                          value={editForm.clientName}
+                          onChange={(e) => setEditForm((f) => ({ ...f, clientName: e.target.value }))}
+                          className="h-10 rounded-xl border-slate-200 font-bold text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          {t("description")}
+                        </Label>
+                        <Input
+                          value={editForm.description}
+                          onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                          className="h-10 rounded-xl border-slate-200 font-bold text-sm"
+                        />
+                      </div>
+                      {editError && (
+                        <p className="text-red-500 text-xs font-bold">{editError}</p>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black gap-1"
+                          onClick={() => handleEditSave(rev.id)}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          {lang === "ar" ? "حفظ" : lang === "ur" ? "محفوظ" : "Save"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl border-slate-200 font-bold gap-1"
+                          onClick={() => setEditingId(null)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          {t("cancel")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* View Mode */
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className={`p-2.5 rounded-xl mt-0.5 ${isDeferred && !isPaid ? "bg-amber-50" : "bg-emerald-50"}`}>
+                          {isDeferred && !isPaid ? (
+                            <Clock className="h-5 w-5 text-amber-600" />
+                          ) : (
+                            <TrendingUp className="h-5 w-5 text-emerald-600" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <p className="font-black text-slate-900 text-sm truncate">
+                              {rev.clientName || t("revenues")}
+                            </p>
+                            {isSettled && (
+                              <Badge className="bg-slate-100 text-slate-500 border-none rounded-md text-[9px] font-black uppercase tracking-widest">
+                                {lang === "ar" ? "مسوَّى" : lang === "ur" ? "طے شدہ" : "Settled"}
+                              </Badge>
+                            )}
+                            {isDeferred && !isPaid && (
+                              <Badge className="bg-amber-100 text-amber-700 border-none rounded-md text-[9px] font-black uppercase tracking-widest">
+                                {lang === "ar" ? "مؤجل" : lang === "ur" ? "موخر" : "Deferred"}
+                              </Badge>
+                            )}
+                            {isDeferred && isPaid && (
+                              <Badge className="bg-emerald-100 text-emerald-700 border-none rounded-md text-[9px] font-black uppercase tracking-widest">
+                                <BadgeCheck className="h-3 w-3 inline mr-0.5" />
+                                {lang === "ar" ? "مدفوع" : lang === "ur" ? "ادا شدہ" : "Paid"}
+                              </Badge>
+                            )}
+                            {rev.hasSavedInvoice && (
+                              <Badge className="bg-blue-50 text-blue-600 border-none rounded-md text-[9px] font-black uppercase tracking-widest">
+                                <FileText className="h-3 w-3 inline mr-0.5" />
+                                {lang === "ar" ? "فاتورة" : lang === "ur" ? "رسید" : "Invoice"}
+                              </Badge>
+                            )}
+                          </div>
+                          {rev.description && (
+                            <p className="text-xs text-slate-400 font-medium truncate">{rev.description}</p>
+                          )}
+                          <p className="text-[10px] text-slate-300 font-bold mt-1 flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" />
+                            {format(new Date(rev.date), "dd/MM/yyyy")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        <p className="font-black text-emerald-600 text-base">
+                          +{fmt(rev.amount)}
+                          <span className="text-[10px] font-bold text-slate-400 mr-1">ريال</span>
+                        </p>
+
+                        {/* Action buttons */}
+                        {!isSettled && (
+                          <div className="flex items-center gap-1.5">
+                            {isDeferred && !isPaid && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                    onClick={() => handleRepay(rev.id)}
+                                  >
+                                    <Coins className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {lang === "ar" ? "تأكيد الدفع" : lang === "ur" ? "ادائیگی تصدیق" : "Confirm Payment"}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                  onClick={() => handleEdit(rev)}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("edit")}</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"
+                                  onClick={() => setConfirmDeleteId(rev.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("delete")}</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        )}
+
+                        {/* Print / Invoice buttons */}
+                        <div className="flex items-center gap-1.5">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                onClick={() => printRevenueInvoice(rev, driverName || undefined)}
+                              >
+                                <Printer className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {lang === "ar" ? "طباعة فاتورة" : lang === "ur" ? "رسید پرنٹ" : "Print Invoice"}
+                            </TooltipContent>
+                          </Tooltip>
+                          {rev.hasSavedInvoice && rev.id && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100"
+                                  onClick={() => viewSavedInvoice(rev.id)}
+                                >
+                                  <FileText className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {lang === "ar" ? "عرض الفاتورة المحفوظة" : lang === "ur" ? "محفوظ رسید دیکھیں" : "View saved invoice"}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Delete confirm inline */}
+                  {confirmDeleteId === rev.id && (
+                    <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+                      <p className="text-sm font-black text-red-700">
+                        {lang === "ar"
+                          ? "هل أنت متأكد من حذف هذا الإيراد؟"
+                          : lang === "ur"
+                          ? "کیا آپ واقعی اس آمدنی کو حذف کرنا چاہتے ہیں؟"
+                          : "Are you sure you want to delete this revenue?"}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black"
+                          onClick={() => handleDelete(rev.id)}
+                        >
+                          {lang === "ar" ? "حذف" : lang === "ur" ? "حذف کریں" : "Delete"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-xl border-slate-200 font-bold"
+                          onClick={() => setConfirmDeleteId(null)}
+                        >
+                          {t("cancel")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
