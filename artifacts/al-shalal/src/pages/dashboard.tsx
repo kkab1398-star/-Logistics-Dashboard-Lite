@@ -308,3 +308,66 @@ ${inv.clientName ? `<div style="background:#f8f9fa;border-radius:8px;padding:12p
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الزيوت والمتفرقات</span>
                 </div>
                 <div className="text-3xl font-black text-slate-900 tracking-tight">
+                  {fmt(summary.oilAndMiscTotal ?? 0)}
+                </div>
+                <div className="mt-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">المصاريف النثرية الأخرى</div>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
+      </div>
+
+      {/* Feed Items (Recent Activity) */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-black text-slate-900 tracking-tight">آخر العمليات المقيدة</h3>
+        <Card className="border-none shadow-xl shadow-slate-200/50 bg-white rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-slate-100">
+            {feedItems.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 font-medium">لا توجد عمليات مقيدة حالياً</div>
+            ) : (
+              feedItems.map((item) => {
+                const style = kindStyle[item.kind];
+                const Icon = style.icon;
+                return (
+                  <div key={item.id} className={`p-4 flex items-center justify-between gap-4 transition-colors hover:bg-slate-50/50 ${style.border}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-xl ${style.bg} ${style.iconColor}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm">{item.label}</p>
+                        {item.subLabel && <p className="text-xs text-slate-400 font-medium mt-0.5">{item.subLabel}</p>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-left">
+                        <p className={`font-black text-sm ${style.textColor}`}>
+                          {item.kind === "expense" ? "-" : "+"}{fmt(item.amount)}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                          {format(new Date(item.date), "dd/MM/yyyy")}
+                        </p>
+                      </div>
+                      {item.kind === "revenue" && item.hasSavedInvoice && item.revenueId && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-8 rounded-lg border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 gap-1"
+                          onClick={() => viewSavedInvoiceInFeed(item.revenueId!)}
+                        >
+                          <FileText className="h-3.5 w-3.5 text-blue-500" />
+                          الفاتورة
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+    </div>
+  );
+}
