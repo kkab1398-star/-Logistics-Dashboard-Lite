@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-// إعداد المنافذ والبيئة
 const rawPort = process.env.PORT;
 const port = rawPort ? Number(rawPort) : 3000;
 const basePath = process.env.BASE_PATH || "/";
@@ -21,10 +20,9 @@ export default defineConfig({
     },
     dedupe: ["react", "react-dom"],
   },
-  // تحديد الجذر والمخرجات بشكل متوافق مع Vercel
   root: path.resolve(import.meta.dirname),
   build: {
-    // توجيه المخرجات لمجلد dist مباشرة لضمان العثور عليها
+    // توحيد المخرج ليكون dist مباشرة لتسهيل الربط مع Vercel
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
