@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "artifacts/api-server/src/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "dist/public/$1"
-    }
-  ],
+  "buildCommand": "pnpm --filter @workspace/al-shalal build",
+  "outputDirectory": "artifacts/al-shalal/dist",
+  "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
+  "framework": null,
   "env": {
     "NODE_ENV": "production"
   }
