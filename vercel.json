@@ -11,11 +11,8 @@
   ],
   "buildCommand": "pnpm --filter @workspace/al-shalal build",
   "installCommand": "npx pnpm@9 install --no-frozen-lockfile",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "redirects": [
-    { "source": "/", "destination": "/dashboard", "permanent": true }
+  "routes": [
+    { "src": "/", "dest": "/dashboard" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
